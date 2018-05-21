@@ -1046,14 +1046,18 @@ void* mwRealloc( void *p, size_t size, const char* file, int line)
         /* fake realloc operation */
         oldUseLimit = mwUseLimit;
         mwUseLimit = 0;
+        MW_MUTEX_UNLOCK();
         ptr = (char*) mwMalloc( size, file, line );
+        MW_MUTEX_LOCK();
         if( ptr != NULL ) {
             if( size < mw->size ) {
                 memcpy( ptr, p, size );
             } else {
                 memcpy( ptr, p, mw->size );
             }
+            MW_MUTEX_UNLOCK();
             mwFree( p, file, line );
+            MW_MUTEX_LOCK();
         }
         mwUseLimit = oldUseLimit;
         MW_MUTEX_UNLOCK();
